@@ -14,6 +14,12 @@ class TestLocationWeatherPage extends StatefulWidget {
 class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
   String _location = 'Menunggu lokasi...';
   String _weather = 'Menunggu cuaca...';
+  String? lat;
+  String? lon;
+  double? currentTemp;
+  int? currentHumidity;
+  double? currentPressure;
+  String? currentCondition;
 
   final LocationService _locationService = LocationService();
   final WeatherService _weatherService = WeatherService();
@@ -23,6 +29,8 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
       final position = await _locationService.getCurrentLocation();
       setState(() {
         _location = 'Lat: ${position.latitude}, Lon: ${position.longitude}';
+        lat = position.latitude.toString();
+        lon = position.longitude.toString();
       });
 
       final weatherData = await _weatherService.getWeather(
@@ -32,6 +40,10 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
             'Kelembapan: ${weatherData.humidity}%, '
             'Tekanan: ${weatherData.pressure} hPa, '
             'Cuaca: ${weatherData.condition}';
+        currentTemp = weatherData.temperature;
+        currentHumidity = weatherData.humidity;
+        currentPressure = weatherData.pressure;
+        currentCondition = weatherData.condition;
       });
     } catch (e) {
       setState(() {
@@ -50,10 +62,13 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
     }
   }
 
-  void testRecommendation() async {
-    debugPrint('Memulai rekomendasi tanaman...');
-    final recommendations =
-        await PlantRecommendationService().getRecommendedPlants();
+  Future<void> testRecommendation() async {
+    debugPrint(
+        'Memulai rekomendasi tanaman... pada suhu $currentTemp dan kelembapan $currentHumidity');
+    final recommendations = await PlantRecommendationService()
+        .getRecommendedPlants(currentTemp!, currentHumidity!);
+    debugPrint(
+        'Rekomendasi tanaman berdasarkan suhu ${currentTemp!}°C dan kelembapan ${currentHumidity!}%:');
     for (var plant in recommendations) {
       debugPrint('Direkomendasikan: ${plant.name}');
     }
@@ -174,11 +189,15 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
     );
   }
 
+  Future<void> _initAsync() async {
+    await _fetchData(); // Menunggu _fetchData selesai
+    await testRecommendation(); // Baru menjalankan rekomendasi
+  }
+
   @override
   void initState() {
     super.initState();
-    _fetchData();
-    testRecommendation();
+    _initAsync(); // Memanggil fungsi async di initState
   }
 
   @override
