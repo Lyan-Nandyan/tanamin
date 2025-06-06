@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tanamin/core/service/location_service.dart';
+import 'package:tanamin/core/service/plant_recommendation_service.dart';
 import 'package:tanamin/core/service/plant_service.dart';
 import 'package:tanamin/core/service/weather_service.dart';
 import 'package:tanamin/data/models/plant_model.dart';
@@ -46,6 +47,15 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
       return plants.map((json) => Plant.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Gagal mengambil data tanaman: $e');
+    }
+  }
+
+  void testRecommendation() async {
+    debugPrint('Memulai rekomendasi tanaman...');
+    final recommendations =
+        await PlantRecommendationService().getRecommendedPlants();
+    for (var plant in recommendations) {
+      debugPrint('Direkomendasikan: ${plant.name}');
     }
   }
 
@@ -168,6 +178,7 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
   void initState() {
     super.initState();
     _fetchData();
+    testRecommendation();
   }
 
   @override
