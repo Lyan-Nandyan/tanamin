@@ -54,48 +54,107 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
       future: _fetchPlants(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('Tidak ada tanaman ditemukan');
+          return Center(child: Text('Tidak ada tanaman ditemukan'));
         } else {
           final plants = snapshot.data!;
           return ListView.builder(
             shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
             itemCount: plants.length,
             itemBuilder: (context, index) {
               final plant = plants[index];
-              return Ink(
-                child: ListTile(
-                  title: Text(plant.name),
-                  subtitle: Text(plant.description),
-                  leading: SizedBox(
-                    width: 60, // lebar tetap
-                    height: 60, // tinggi tetap
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                          8), // opsional, agar sudut membulat
-                      child: Image.network(
-                        plant.imageUrl,
-                        fit: BoxFit.cover, // isi penuh area tanpa merusak rasio
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(Icons.image_not_supported),
-                      ),
-                    ),
-                  ),
-                  trailing: Text(
-                    'IDR ${plant.estimatedCost.toStringAsFixed(2)}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+              return Card(
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    // Aksi ketika item ditekan, misalnya navigasi ke detail tanaman
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              'Anda memilih ${plant.name} dengan ID ${plant.id}')),
+                        content: Text(
+                            'Anda memilih ${plant.name} dengan ID ${plant.id}'),
+                      ),
                     );
                   },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                        child: Image.network(
+                          plant.imageUrl,
+                          height: 160,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            height: 160,
+                            color: Colors.grey[300],
+                            child: Icon(Icons.image_not_supported, size: 80),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              plant.name,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              plant.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[700]),
+                            ),
+                            SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              children: plant.suitableSeasons
+                                  .map((season) => Chip(
+                                        label: Text(season),
+                                        visualDensity: VisualDensity.compact,
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ))
+                                  .toList(),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Suhu: ${plant.minTemp}°C – ${plant.maxTemp}°C',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              'Kelembapan: ${plant.minHumidity}% – ${plant.maxHumidity}%',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'IDR ${plant.estimatedCost.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
