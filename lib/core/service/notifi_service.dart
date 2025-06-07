@@ -116,7 +116,7 @@ class NotifiService {
           _nextInstanceOfWeekdayTime(weekday, schedule.hour, schedule.minute);
 
       await notificationsPlugin.zonedSchedule(
-        int.parse('${schedule.id}${weekday}'), // agar unik tiap hari
+        int.parse('${schedule.id}$weekday'), // agar unik tiap hari
         schedule.title,
         schedule.body,
         scheduledDate,
@@ -156,8 +156,8 @@ class NotifiService {
 
     for (int weekday in schedule.repeatDays) {
       await notificationsPlugin
-          .cancel(int.parse('${schedule.id}${weekday}')); // cancel notifikasi spesifik
-      debugPrint("Notifikasi dengan ID ${int.parse('${schedule.id}${weekday}')} dibatalkan");
+          .cancel(int.parse('${schedule.id}$weekday')); // cancel notifikasi spesifik
+      debugPrint("Notifikasi dengan ID ${int.parse('${schedule.id}$weekday')} dibatalkan");
     }
 
     final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');

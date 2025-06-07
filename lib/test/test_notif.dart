@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/schedule.dart';
+import 'package:tanamin/data/models/myplant.dart';
+import 'package:tanamin/widgets/add_plant_dialog.dart';
+import 'package:tanamin/widgets/add_schedule_dialog.dart';
 
 class TestNotif extends StatefulWidget {
   const TestNotif({super.key});
@@ -11,8 +14,9 @@ class TestNotif extends StatefulWidget {
 }
 
 class _TestNotifState extends State<TestNotif> {
-  NotifiService notifiService = NotifiService();
+  final NotifiService notifiService = NotifiService();
   final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
+  final plantBox = Hive.box<MyPlant>('my_plants');
 
   @override
   void initState() {
@@ -20,163 +24,134 @@ class _TestNotifState extends State<TestNotif> {
     notifiService.init();
   }
 
-  void _showAddScheduleDialog() {
-    final titleController = TextEditingController();
-    final bodyController = TextEditingController();
-    TimeOfDay selectedTime = TimeOfDay.now();
-    List<bool> selectedDays = List.generate(7, (_) => false); // Senin-Minggu
-
+  void _showAddPlantDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Tambah Jadwal"),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: "Judul"),
-              ),
-              TextField(
-                controller: bodyController,
-                decoration: InputDecoration(labelText: "Deskripsi"),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: selectedTime,
-                  );
-                  if (picked != null) selectedTime = picked;
-                },
-                child: Text("Pilih Jam"),
-              ),
-              SizedBox(height: 8),
-              Text("Pilih Hari:"),
-              ...List.generate(7, (index) {
-                final weekdays = [
-                  'Senin',
-                  'Selasa',
-                  'Rabu',
-                  'Kamis',
-                  'Jumat',
-                  'Sabtu',
-                  'Minggu'
-                ];
-                return CheckboxListTile(
-                  title: Text(weekdays[index]),
-                  value: selectedDays[index],
-                  onChanged: (value) {
-                    setState(() => selectedDays[index] = value!);
-                  },
-                );
-              }),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Batal"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Ambil data dari form
-              final hour = selectedTime.hour;
-              final minute = selectedTime.minute;
-              final repeatDays = List.generate(7, (i) => i + 1)
-                  .where((i) => selectedDays[i - 1])
-                  .toList();
-              final title = titleController.text;
-              final body = bodyController.text;
+      builder: (_) => AddPlantDialog(onSaved: () => setState(() {})),
+    );
+  }
 
-              // Simpan dulu ke Hive, biar dapat key unik dari Hive
-              final key = await scheduleBox.add(
-                PlantSchedule(
-                  id: -1, // Sementara, akan diupdate setelah dapat key Hive
-                  hour: hour,
-                  minute: minute,
-                  repeatDays: repeatDays,
-                  title: title,
-                  body: body,
-                ),
-              );
-
-              // Ambil kembali object-nya
-              final savedSchedule = scheduleBox.get(key);
-
-              if (savedSchedule != null) {
-                // Buat salinan dengan ID yang diperbarui berdasarkan key Hive
-                final updatedSchedule = PlantSchedule(
-                  id: key, // Gunakan key Hive sebagai ID notifikasi
-                  hour: savedSchedule.hour,
-                  minute: savedSchedule.minute,
-                  repeatDays: savedSchedule.repeatDays,
-                  title: savedSchedule.title,
-                  body: savedSchedule.body,
-                );
-
-                // Simpan kembali dengan key yang sama (overwrite)
-                await scheduleBox.put(key, updatedSchedule);
-                debugPrint("Jadwal disimpan dengan ID: $key");
-                debugPrint('data jadwal: ${updatedSchedule.id}, '
-                    '${updatedSchedule.hour}, ${updatedSchedule.minute}, '
-                    '${updatedSchedule.repeatDays}, ${updatedSchedule.title}, '
-                    '${updatedSchedule.body}');
-
-                // Jadwalkan notifikasi menggunakan ID dari key Hive
-                await notifiService.scheduleRepeatedReminder(updatedSchedule);
-              }
-
-              Navigator.pop(context);
-              setState(() {}); // Refresh UI
-            },
-            child: Text("Simpan"),
-          ),
-        ],
+  void _showAddScheduleDialog(MyPlant plant) {
+    showDialog(
+      context: context,
+      builder: (_) => AddScheduleDialog(
+        plant: plant,
+        onSaved: () => setState(() {}),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final schedules = scheduleBox.values.toList();
+    final plants = plantBox.values.toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test Notif'),
+        title: const Text('Tanaman Kamu'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
-            onPressed: _showAddScheduleDialog,
+            icon: const Icon(Icons.add),
+            onPressed: _showAddPlantDialog,
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: schedules.length,
-        itemBuilder: (context, index) {
-          final schedule = schedules[index];
+      body: plants.isEmpty
+          ? const Center(child: Text("Belum ada tanaman"))
+          : ListView.builder(
+              itemCount: plants.length,
+              itemBuilder: (context, index) {
+                final plant = plants[index];
+                final schedules = plant.scheduleIds
+                    .map((id) => scheduleBox.get(id))
+                    .whereType<PlantSchedule>()
+                    .toList();
 
-          return ListTile(
-            title: Text(schedule.title),
-            subtitle: Text(
-              'Jam: ${schedule.hour}:${schedule.minute.toString().padLeft(2, '0')}, '
-              'Hari: ${schedule.repeatDays.join(', ')}',
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () async {
-                await notifiService.deleteScheduleWithNotification(schedule);
-                debugPrint("Jadwal dengan ID ${schedule.id} dihapus");
-                setState(() {});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Jadwal dihapus')),
+                return Card(
+                  margin: const EdgeInsets.all(8),
+                  child: ExpansionTile(
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(plant.name),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Hapus Tanaman'),
+                                content: Text(
+                                    'Apakah kamu yakin ingin menghapus "${plant.name}" beserta semua jadwalnya?'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Batal'),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Hapus',
+                                        style: TextStyle(color: Colors.red)),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              // Hapus semua jadwal & notifikasi
+                              for (var id in plant.scheduleIds) {
+                                final schedule = scheduleBox.get(id);
+                                if (schedule != null) {
+                                  await notifiService
+                                      .deleteScheduleWithNotification(schedule);
+                                }
+                              }
+                              await plant.delete();
+                              setState(() {});
+                            }
+                          },
+                        )
+                      ],
+                    ),
+                    subtitle: Text('Jadwal: ${schedules.length}'),
+                    children: [
+                      ...schedules.map((s) => ListTile(
+                            title: Text(s.title),
+                            subtitle: Text(
+                              'Jam: ${s.hour}:${s.minute.toString().padLeft(2, '0')} | '
+                              'Hari: ${s.repeatDays.join(', ')}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                await notifiService
+                                    .deleteScheduleWithNotification(s);
+                                plant.scheduleIds.remove(s.id);
+                                debugPrint(
+                                    "Jadwal dengan ID ${s.id} dihapus dari tanaman ${plant.name}");
+                                await plant.save();
+                                debugPrint('dan isi tanaman ${plant.name} adalah ${plant.scheduleIds.length}');
+                                setState(() {});
+                              },
+                            ),
+                          )),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text("Tambah Jadwal"),
+                            onPressed: () => _showAddScheduleDialog(plant),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 );
               },
             ),
-          );
-        },
-      ),
     );
   }
 }

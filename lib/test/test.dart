@@ -6,6 +6,8 @@ import 'package:tanamin/core/service/weather_service.dart';
 import 'package:tanamin/data/models/plant_model.dart';
 
 class TestLocationWeatherPage extends StatefulWidget {
+  const TestLocationWeatherPage({super.key});
+
   @override
   _TestLocationWeatherPageState createState() =>
       _TestLocationWeatherPageState();
