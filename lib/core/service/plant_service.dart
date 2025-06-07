@@ -21,7 +21,7 @@ class PlantService {
         return jsonList.cast<Map<String, dynamic>>();
       } else {
         _logger.e("Server error: ${response.statusCode}");
-        throw Exception("Server error: ${response.statusCode}");
+        throw response.statusCode;
       }
     } catch (e) {
       _logger.e("Error fetching data: $e");
@@ -43,7 +43,7 @@ class PlantService {
         return jsonMap;
       } else {
         _logger.e("Server error: ${response.statusCode}");
-        throw Exception("Server error: ${response.statusCode}");
+        throw response.statusCode;
       }
     } catch (e) {
       _logger.e("Error fetching data: $e");

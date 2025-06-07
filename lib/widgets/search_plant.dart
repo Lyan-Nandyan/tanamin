@@ -1,91 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:tanamin/core/service/location_service.dart';
-import 'package:tanamin/core/service/plant_recommendation_service.dart';
 import 'package:tanamin/core/service/plant_service.dart';
-import 'package:tanamin/core/service/weather_service.dart';
 import 'package:tanamin/data/models/plant_model.dart';
 import 'package:tanamin/widgets/converted_price_text.dart';
-import 'package:tanamin/widgets/search_plant.dart';
 
-class TestLocationWeatherPage extends StatefulWidget {
-  const TestLocationWeatherPage({super.key});
+class SearchPlant extends StatefulWidget {
+  const SearchPlant({super.key});
 
   @override
-  _TestLocationWeatherPageState createState() =>
-      _TestLocationWeatherPageState();
+  State<SearchPlant> createState() => _SearchPlantState();
 }
 
-class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
-  String _location = 'Menunggu lokasi...';
-  String _weather = 'Menunggu cuaca...';
-  String? lat;
-  String? lon;
-  double? currentTemp;
-  int? currentHumidity;
-  double? currentPressure;
-  String? currentCondition;
+class _SearchPlantState extends State<SearchPlant> {
+  List<Plant> searchResults = [];
+  String searchQuery = '';
 
-  final LocationService _locationService = LocationService();
-  final WeatherService _weatherService = WeatherService();
-
-  Future<void> _fetchData() async {
-    try {
-      final position = await _locationService.getCurrentLocation();
-      setState(() {
-        _location = 'Lat: ${position.latitude}, Lon: ${position.longitude}';
-        lat = position.latitude.toString();
-        lon = position.longitude.toString();
-      });
-
-      final weatherData = await _weatherService.getWeather(
-          position.latitude, position.longitude);
-      setState(() {
-        _weather = 'Suhu: ${weatherData.temperature}°C, '
-            'Kelembapan: ${weatherData.humidity}%, '
-            'Tekanan: ${weatherData.pressure} hPa, '
-            'Cuaca: ${weatherData.condition}';
-        currentTemp = weatherData.temperature;
-        currentHumidity = weatherData.humidity;
-        currentPressure = weatherData.pressure;
-        currentCondition = weatherData.condition;
-      });
-    } catch (e) {
-      setState(() {
-        _location = 'Error: $e';
-        _weather = 'Error: $e';
-      });
-    }
+  Future<List<Plant>> fetchSearchResults(String search) async {
+    final rawList = await PlantService.getAllPlant('?name=$search');
+    return rawList.map((e) => Plant.fromJson(e)).toList();
   }
 
-  Future<List<Plant>> _fetchPlants() async {
-    try {
-      final plants = await PlantService.getAllPlant('');
-      return plants.map((json) => Plant.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception('Gagal mengambil data tanaman: $e');
-    }
-  }
-
-  Future<void> testRecommendation() async {
-    debugPrint(
-        'Memulai rekomendasi tanaman... pada suhu $currentTemp dan kelembapan $currentHumidity');
-    final recommendations = await PlantRecommendationService()
-        .getRecommendedPlants(currentTemp!, currentHumidity!);
-    debugPrint(
-        'Rekomendasi tanaman berdasarkan suhu ${currentTemp!}°C dan kelembapan ${currentHumidity!}%:');
-    for (var plant in recommendations) {
-      debugPrint('Direkomendasikan: ${plant.name}');
-    }
+  Widget _searchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: TextField(
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: 'Search Plants...',
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.1),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(
+              color: Colors.black,
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(
+              color: Colors.black,
+              width: 2,
+            ),
+          ),
+          prefixIcon: const Icon(Icons.search, color: Colors.black),
+        ),
+        style: const TextStyle(color: Colors.black),
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+          if (value.isNotEmpty) {
+            fetchSearchResults(value).then((results) {
+              setState(() {
+                searchResults = results;
+              });
+            });
+          } else {
+            setState(() {
+              searchResults = [];
+            });
+          }
+        },
+      ),
+    );
   }
 
   Widget _buildPlantList() {
     return FutureBuilder<List<Plant>>(
-      future: _fetchPlants(),
+      future: fetchSearchResults(searchQuery),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          if (snapshot.error.toString() ==
+              'Exception: Error fetching data: 404') {
+            return const Center(child: Text('Tidak ada tanaman ditemukan'));
+          } else {
+            return Center(child: Text('Terjadi kesalahan: ${snapshot.error}'));
+          }
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('Tidak ada tanaman ditemukan'));
         }
@@ -185,80 +177,21 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
     );
   }
 
-  Widget _searchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: TextField(
-        readOnly: true,
-        decoration: InputDecoration(
-          hintText: 'Search Plants...',
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.1),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              color: Colors.black,
-              width: 1,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              color: Colors.black,
-              width: 2,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              color: Colors.black,
-              width: 1,
-            ),
-          ),
-          prefixIcon: const Icon(Icons.search, color: Colors.black),
-        ),
-        style: const TextStyle(color: Colors.black),
-        onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const SearchPlant())),
-      ),
-    );
-  }
-
-  Future<void> _initAsync() async {
-    await _fetchData(); // Menunggu _fetchData selesai
-    await testRecommendation(); // Baru menjalankan rekomendasi
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initAsync(); // Memanggil fungsi async di initState
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Test Lokasi dan Cuaca')),
+      appBar: AppBar(
+        title: const Text('Cari Tanaman'),
+        backgroundColor: Colors.green,
+        centerTitle: true,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             _searchBar(),
-            SizedBox(height: 20),
-            Text(_location),
-            SizedBox(height: 20),
-            Text(_weather),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: _fetchData,
-              child: Text('Refresh Data'),
-            ),
-            SizedBox(height: 20),
-            Text('Daftar Tanaman:'),
-            SizedBox(height: 10),
-            Expanded(
-              child: _buildPlantList(),
-            ),
+            const SizedBox(height: 10),
+            Expanded(child: _buildPlantList()),
           ],
         ),
       ),
