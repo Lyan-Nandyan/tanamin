@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tanamin/core/service/auth_service.dart';
 import 'package:tanamin/core/service/plant_service.dart';
 import 'package:tanamin/data/models/plant_model.dart';
+import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/widgets/converted_price_text.dart';
 
 class SearchPlant extends StatefulWidget {
@@ -13,6 +15,8 @@ class SearchPlant extends StatefulWidget {
 class _SearchPlantState extends State<SearchPlant> {
   List<Plant> searchResults = [];
   String searchQuery = '';
+  AuthService authService = AuthService();
+  UserModel? user;
 
   Future<List<Plant>> fetchSearchResults(String search) async {
     final rawList = await PlantService.getAllPlant('?name=$search');
@@ -63,6 +67,16 @@ class _SearchPlantState extends State<SearchPlant> {
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    authService.getLoggedInUser().then((loadedUser) {
+      setState(() {
+        user = loadedUser;
+      });
+    });
   }
 
   Widget _buildPlantList() {
@@ -163,7 +177,8 @@ class _SearchPlantState extends State<SearchPlant> {
                               style: const TextStyle(fontSize: 12)),
                           const SizedBox(height: 6),
                           ConvertedPriceText(
-                              amount: plant.estimatedCost, currencyOption: 3),
+                              amount: plant.estimatedCost,
+                              currencyOption: user!.config),
                         ],
                       ),
                     ),

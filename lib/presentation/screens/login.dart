@@ -54,9 +54,7 @@ class _LoginState extends State<Login> {
                   if (_formKey.currentState!.validate()) {
                     try {
                       await authService.login(
-                          _usernameCtrl.text, _passwordCtrl.text, context);
-                      //Navigator.pushReplacementNamed(context, '/home');
-                      
+                          _usernameCtrl.text, _passwordCtrl.text, context);                      
                     } catch (e) {
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(e.toString())));

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/data/models/user.dart';
+import 'package:tanamin/presentation/page/home.dart';
+import 'package:tanamin/presentation/screens/login.dart';
 import '../utils/hash_util.dart';
 
 class AuthService {
@@ -63,6 +65,8 @@ class AuthService {
         content: Text('Login Berhasil'),
         backgroundColor: Colors.green,
       ));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Home()));
     } else {
       ScaffoldMessenger.of(
         context,
@@ -73,19 +77,23 @@ class AuthService {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout(context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(sessionKey);
     await prefs.remove('userLoggedIn');
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const Login()));
   }
 
   Future<UserModel?> getLoggedInUser() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString(sessionKey);
+    debugPrint('getLoggedInUser: $id');
     if (id == null) return null;
 
     final box = await Hive.openBox<UserModel>(userBoxName);
-    return box.get(id);
+    debugPrint('getLoggedInUser: ${box.get(int.parse(id))}');
+    return box.get(int.parse(id));
   }
 
   Future<bool> isLoggedIn() async {
