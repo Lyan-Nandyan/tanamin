@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hive/hive.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:timezone/data/latest.dart';
@@ -8,39 +9,61 @@ import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotifiService {
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    // Inisialisasi zona waktu hanya sekali
     initializeTimeZones();
-    setLocalLocation(getLocation('Asia/Jakarta'));
 
+    await _setupTimeZone();
+    await _initializeNotifications();
+    await _requestPermissions();
+  }
+
+  Future<void> _setupTimeZone() async {
+    try {
+      final deviceTimeZone = await FlutterTimezone.getLocalTimezone();
+      final location = getLocation(deviceTimeZone);
+      setLocalLocation(location);
+      debugPrint("Zona waktu berhasil di-set: $deviceTimeZone");
+
+      // Simpan zona waktu ke shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_timezone', deviceTimeZone);
+    } catch (e) {
+      debugPrint(
+          "Gagal set zona waktu perangkat, fallback ke Asia/Jakarta: $e");
+      setLocalLocation(getLocation('Asia/Jakarta'));
+    }
+  }
+
+  Future<void> _initializeNotifications() async {
     const androidSetting = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettings =
-        InitializationSettings(android: androidSetting);
+    const initializationSettings = InitializationSettings(
+      android: androidSetting,
+    );
     await notificationsPlugin.initialize(initializationSettings);
+  }
 
-    // Minta izin notifikasi (Android 13+)
-    final bool? granted = await notificationsPlugin
+  Future<void> _requestPermissions() async {
+    // Minta izin notifikasi dasar
+    final granted = await notificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
 
-    if (granted != null && granted) {
-      print("Izin notifikasi diberikan");
-    } else {
-      print("Izin notifikasi ditolak atau tidak diminta");
-    }
+    debugPrint(granted == true
+        ? "Izin notifikasi diberikan"
+        : "Izin notifikasi ditolak atau tidak diminta");
 
-    // Cek dan minta izin SCHEDULE_EXACT_ALARM jika perlu
+    // Cek izin exact alarm jika Android 12+ (API 31+)
     if (Platform.isAndroid) {
       final deviceInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = deviceInfo.version.sdkInt;
-
-      if (sdkInt >= 31) {
-        // Android 12+ butuh izin exact alarm
+      if (deviceInfo.version.sdkInt >= 31) {
         final plugin =
             notificationsPlugin.resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>();
@@ -49,16 +72,43 @@ class NotifiService {
             await plugin?.canScheduleExactNotifications() ?? false;
 
         if (!exactAlarmPermitted) {
-          print("Izin exact alarm belum diberikan. Membuka pengaturan...");
+          debugPrint("Izin exact alarm belum diberikan. Membuka pengaturan...");
           final intent = AndroidIntent(
             action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
             flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
           );
           await intent.launch();
         } else {
-          print("Izin exact alarm sudah diberikan");
+          debugPrint("Izin exact alarm sudah diberikan");
         }
       }
+    }
+  }
+
+  Future<void> checkAndUpdateTimeZone() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentZone = await FlutterTimezone.getLocalTimezone();
+      final lastZone = prefs.getString('last_timezone');
+
+      if (currentZone != lastZone) {
+        debugPrint("Zona waktu berubah: $lastZone -> $currentZone");
+
+        final location = getLocation(currentZone);
+        setLocalLocation(location);
+        await prefs.setString('last_timezone', currentZone);
+
+        final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
+        for (var schedule in scheduleBox.values) {
+          await scheduleRepeatedReminder(schedule);
+        }
+
+        debugPrint("Jadwal notifikasi disesuaikan dengan zona waktu baru.");
+      } else {
+        debugPrint("Zona waktu tidak berubah: $currentZone");
+      }
+    } catch (e) {
+      debugPrint("Gagal memeriksa atau mengatur zona waktu baru: $e");
     }
   }
 
@@ -155,9 +205,10 @@ class NotifiService {
     final notificationsPlugin = FlutterLocalNotificationsPlugin();
 
     for (int weekday in schedule.repeatDays) {
-      await notificationsPlugin
-          .cancel(int.parse('${schedule.id}$weekday')); // cancel notifikasi spesifik
-      debugPrint("Notifikasi dengan ID ${int.parse('${schedule.id}$weekday')} dibatalkan");
+      await notificationsPlugin.cancel(
+          int.parse('${schedule.id}$weekday')); // cancel notifikasi spesifik
+      debugPrint(
+          "Notifikasi dengan ID ${int.parse('${schedule.id}$weekday')} dibatalkan");
     }
 
     final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
