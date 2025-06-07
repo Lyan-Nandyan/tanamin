@@ -23,13 +23,14 @@ class PlantScheduleAdapter extends TypeAdapter<PlantSchedule> {
       repeatDays: (fields[3] as List).cast<int>(),
       title: fields[4] as String,
       body: fields[5] as String,
+      zone: fields[6] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlantSchedule obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class PlantScheduleAdapter extends TypeAdapter<PlantSchedule> {
       ..writeByte(4)
       ..write(obj.title)
       ..writeByte(5)
-      ..write(obj.body);
+      ..write(obj.body)
+      ..writeByte(6)
+      ..write(obj.zone);
   }
 
   @override

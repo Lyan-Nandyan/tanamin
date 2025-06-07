@@ -119,7 +119,7 @@ class _TestNotifState extends State<TestNotif> {
                       ...schedules.map((s) => ListTile(
                             title: Text(s.title),
                             subtitle: Text(
-                              'Jam: ${s.hour}:${s.minute.toString().padLeft(2, '0')} | '
+                              'Jam: ${s.hour}:${s.minute.toString().padLeft(2, '0')} ${s.zone} | '
                               'Hari: ${s.repeatDays.join(', ')}',
                             ),
                             trailing: IconButton(
@@ -131,7 +131,8 @@ class _TestNotifState extends State<TestNotif> {
                                 debugPrint(
                                     "Jadwal dengan ID ${s.id} dihapus dari tanaman ${plant.name}");
                                 await plant.save();
-                                debugPrint('dan isi tanaman ${plant.name} adalah ${plant.scheduleIds.length}');
+                                debugPrint(
+                                    'dan isi tanaman ${plant.name} adalah ${plant.scheduleIds.length}');
                                 setState(() {});
                               },
                             ),

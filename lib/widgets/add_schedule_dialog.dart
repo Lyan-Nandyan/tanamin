@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/myplant.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class AddScheduleDialog extends StatefulWidget {
   final MyPlant plant;
@@ -18,7 +19,7 @@ class AddScheduleDialog extends StatefulWidget {
 class _AddScheduleDialogState extends State<AddScheduleDialog> {
   final NotifiService notifiService = NotifiService();
   final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
-
+  final localZone = tz.local;
   TimeOfDay selectedTime = TimeOfDay.now();
   List<bool> selectedDays = List.generate(7, (_) => false);
   String selectedAction = 'Menyiram';
@@ -36,7 +37,8 @@ class _AddScheduleDialogState extends State<AddScheduleDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Tambah Jadwal untuk ${widget.plant.name}"),
+      title: Text(
+          "Tambah Jadwal untuk ${widget.plant.name}\n Zona lokal saat ini $localZone"),
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -62,7 +64,7 @@ class _AddScheduleDialogState extends State<AddScheduleDialog> {
                   setState(() => selectedTime = picked);
                 }
               },
-              child: const Text("Pilih Jam"),
+              child: Text("Pilih Jam"),
             ),
             const SizedBox(height: 10),
             const Text("Pilih Hari:"),
@@ -111,6 +113,7 @@ class _AddScheduleDialogState extends State<AddScheduleDialog> {
                 repeatDays: repeatDays,
                 title: title,
                 body: body,
+                zone: localZone.toString(),
               ),
             );
 
@@ -123,6 +126,7 @@ class _AddScheduleDialogState extends State<AddScheduleDialog> {
                 repeatDays: savedSchedule.repeatDays,
                 title: savedSchedule.title,
                 body: savedSchedule.body,
+                zone: savedSchedule.zone,
               );
               await scheduleBox.put(key, updated);
               await notifiService.scheduleRepeatedReminder(updated);

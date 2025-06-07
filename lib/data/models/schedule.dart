@@ -21,6 +21,9 @@ class PlantSchedule extends HiveObject {
   @HiveField(5)
   String body;
 
+  @HiveField(6)
+  String zone;
+
   PlantSchedule({
     required this.id,
     required this.hour,
@@ -28,5 +31,6 @@ class PlantSchedule extends HiveObject {
     required this.repeatDays,
     required this.title,
     required this.body,
+    required this.zone,
   });
 }
