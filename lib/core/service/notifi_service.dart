@@ -85,33 +85,6 @@ class NotifiService {
     }
   }
 
-  Future<void> checkAndUpdateTimeZone() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final currentZone = await FlutterTimezone.getLocalTimezone();
-      final lastZone = prefs.getString('last_timezone');
-
-      if (currentZone != lastZone) {
-        debugPrint("Zona waktu berubah: $lastZone -> $currentZone");
-
-        final location = getLocation(currentZone);
-        setLocalLocation(location);
-        await prefs.setString('last_timezone', currentZone);
-
-        final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
-        for (var schedule in scheduleBox.values) {
-          await scheduleRepeatedReminder(schedule);
-        }
-
-        debugPrint("Jadwal notifikasi disesuaikan dengan zona waktu baru.");
-      } else {
-        debugPrint("Zona waktu tidak berubah: $currentZone");
-      }
-    } catch (e) {
-      debugPrint("Gagal memeriksa atau mengatur zona waktu baru: $e");
-    }
-  }
-
   Future<void> showInstantNotification(
       {required int id, required String title, required String body}) async {
     await notificationsPlugin.show(

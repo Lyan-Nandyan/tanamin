@@ -28,8 +28,6 @@ void main() async {
   final notifiService = NotifiService();
   // Initialize and check timezone
   await notifiService.init(); 
-  // Check and update timezone if necessary
-  await notifiService.checkAndUpdateTimeZone(); 
   runApp(const MyApp());
 }
 
