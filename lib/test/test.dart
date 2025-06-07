@@ -4,6 +4,7 @@ import 'package:tanamin/core/service/plant_recommendation_service.dart';
 import 'package:tanamin/core/service/plant_service.dart';
 import 'package:tanamin/core/service/weather_service.dart';
 import 'package:tanamin/data/models/plant_model.dart';
+import 'package:tanamin/widgets/converted_price_text.dart';
 
 class TestLocationWeatherPage extends StatefulWidget {
   const TestLocationWeatherPage({super.key});
@@ -81,112 +82,104 @@ class _TestLocationWeatherPageState extends State<TestLocationWeatherPage> {
       future: _fetchPlants(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('Tidak ada tanaman ditemukan'));
-        } else {
-          final plants = snapshot.data!;
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: BouncingScrollPhysics(),
-            itemCount: plants.length,
-            itemBuilder: (context, index) {
-              final plant = plants[index];
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                            'Anda memilih ${plant.name} dengan ID ${plant.id}'),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ClipRRect(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16)),
-                        child: Image.network(
-                          plant.imageUrl,
-                          height: 160,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            height: 160,
-                            color: Colors.grey[300],
-                            child: Icon(Icons.image_not_supported, size: 80),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              plant.name,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              plant.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey[700]),
-                            ),
-                            SizedBox(height: 8),
-                            Wrap(
-                              spacing: 6,
-                              children: plant.suitableSeasons
-                                  .map((season) => Chip(
-                                        label: Text(season),
-                                        visualDensity: VisualDensity.compact,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ))
-                                  .toList(),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Suhu: ${plant.minTemp}°C – ${plant.maxTemp}°C',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            Text(
-                              'Kelembapan: ${plant.minHumidity}% – ${plant.maxHumidity}%',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'IDR ${plant.estimatedCost.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
+          return const Center(child: Text('Tidak ada tanaman ditemukan'));
         }
+
+        final plants = snapshot.data!;
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const BouncingScrollPhysics(),
+          itemCount: plants.length,
+          itemBuilder: (context, index) {
+            final plant = plants[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Anda memilih ${plant.name} dengan ID ${plant.id}'),
+                    ),
+                  );
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Image.network(
+                        plant.imageUrl,
+                        height: 160,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 160,
+                          color: Colors.grey[300],
+                          child:
+                              const Icon(Icons.image_not_supported, size: 80),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            plant.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            plant.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.grey[700]),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            children: plant.suitableSeasons.map((season) {
+                              return Chip(
+                                label: Text(season),
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 4),
+                          Text('Suhu: ${plant.minTemp}°C – ${plant.maxTemp}°C',
+                              style: const TextStyle(fontSize: 12)),
+                          Text(
+                              'Kelembapan: ${plant.minHumidity}% – ${plant.maxHumidity}%',
+                              style: const TextStyle(fontSize: 12)),
+                          const SizedBox(height: 6),
+                          ConvertedPriceText(
+                              amount: plant.estimatedCost, currencyOption: 3),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
