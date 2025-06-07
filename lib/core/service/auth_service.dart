@@ -48,12 +48,14 @@ class AuthService {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(sessionKey, user.id);
+      await prefs.setBool('userLoggedIn', true);
     }
   }
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(sessionKey);
+    await prefs.remove('userLoggedIn');
   }
 
   Future<UserModel?> getLoggedInUser() async {
@@ -67,6 +69,6 @@ class AuthService {
 
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey(sessionKey);
+    return prefs.getBool('userLoggedIn') ?? false;
   }
 }
