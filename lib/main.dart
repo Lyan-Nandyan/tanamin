@@ -6,7 +6,9 @@ import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/test/test.dart';
+import 'package:tanamin/test/test_konvert_waktu.dart';
 import 'package:tanamin/test/test_notif.dart';
+
 void main() async {
   // Load environment variables from .env file
   await dotenv.load(fileName: ".env");
@@ -27,7 +29,7 @@ void main() async {
   // Initialize NotifiService
   final notifiService = NotifiService();
   // Initialize and check timezone
-  await notifiService.init(); 
+  await notifiService.init();
   runApp(const MyApp());
 }
 
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: TestNotif(),
+      home: TestKonvertWaktu(),
     );
   }
 }
