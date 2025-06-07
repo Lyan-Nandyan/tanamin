@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
+import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/test/test.dart';
 import 'package:tanamin/test/test_konvert_waktu.dart';
 import 'package:tanamin/test/test_notif.dart';
@@ -22,10 +23,13 @@ void main() async {
   Hive.registerAdapter(PlantScheduleAdapter());
   // Register MyPlant adapter
   Hive.registerAdapter(MyPlantAdapter());
+  // Register UserModel adapter
+  Hive.registerAdapter(UserModelAdapter());
 
   // Open boxes
   await Hive.openBox<PlantSchedule>('plant_schedules');
   await Hive.openBox<MyPlant>('my_plants');
+  await Hive.openBox<UserModel>('users');
   // Initialize NotifiService
   final notifiService = NotifiService();
   // Initialize and check timezone
