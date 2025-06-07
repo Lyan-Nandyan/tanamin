@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:tanamin/data/models/schedule.dart';
@@ -115,7 +116,7 @@ class NotifiService {
           _nextInstanceOfWeekdayTime(weekday, schedule.hour, schedule.minute);
 
       await notificationsPlugin.zonedSchedule(
-        schedule.id + weekday, // agar unik tiap hari
+        int.parse('${schedule.id}${weekday}'), // agar unik tiap hari
         schedule.title,
         schedule.body,
         scheduledDate,
@@ -155,10 +156,12 @@ class NotifiService {
 
     for (int weekday in schedule.repeatDays) {
       await notificationsPlugin
-          .cancel(schedule.id + weekday); // cancel notifikasi spesifik
+          .cancel(int.parse('${schedule.id}${weekday}')); // cancel notifikasi spesifik
+      debugPrint("Notifikasi dengan ID ${int.parse('${schedule.id}${weekday}')} dibatalkan");
     }
 
     final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
     await scheduleBox.delete(schedule.id); // hapus dari Hive
+    debugPrint("Jadwal dengan ID ${schedule.id} dihapus dari Hive");
   }
 }

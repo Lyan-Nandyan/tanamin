@@ -54,7 +54,15 @@ class _TestNotifState extends State<TestNotif> {
               SizedBox(height: 8),
               Text("Pilih Hari:"),
               ...List.generate(7, (index) {
-                final weekdays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+                final weekdays = [
+                  'Senin',
+                  'Selasa',
+                  'Rabu',
+                  'Kamis',
+                  'Jumat',
+                  'Sabtu',
+                  'Minggu'
+                ];
                 return CheckboxListTile(
                   title: Text(weekdays[index]),
                   value: selectedDays[index],
@@ -73,18 +81,52 @@ class _TestNotifState extends State<TestNotif> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-              final newSchedule = PlantSchedule(
-                id: id,
-                hour: selectedTime.hour,
-                minute: selectedTime.minute,
-                repeatDays: List.generate(7, (i) => i + 1).where((i) => selectedDays[i - 1]).toList(),
-                title: titleController.text,
-                body: bodyController.text,
+              // Ambil data dari form
+              final hour = selectedTime.hour;
+              final minute = selectedTime.minute;
+              final repeatDays = List.generate(7, (i) => i + 1)
+                  .where((i) => selectedDays[i - 1])
+                  .toList();
+              final title = titleController.text;
+              final body = bodyController.text;
+
+              // Simpan dulu ke Hive, biar dapat key unik dari Hive
+              final key = await scheduleBox.add(
+                PlantSchedule(
+                  id: -1, // Sementara, akan diupdate setelah dapat key Hive
+                  hour: hour,
+                  minute: minute,
+                  repeatDays: repeatDays,
+                  title: title,
+                  body: body,
+                ),
               );
 
-              await scheduleBox.add(newSchedule);
-              await notifiService.scheduleRepeatedReminder(newSchedule);
+              // Ambil kembali object-nya
+              final savedSchedule = scheduleBox.get(key);
+
+              if (savedSchedule != null) {
+                // Buat salinan dengan ID yang diperbarui berdasarkan key Hive
+                final updatedSchedule = PlantSchedule(
+                  id: key, // Gunakan key Hive sebagai ID notifikasi
+                  hour: savedSchedule.hour,
+                  minute: savedSchedule.minute,
+                  repeatDays: savedSchedule.repeatDays,
+                  title: savedSchedule.title,
+                  body: savedSchedule.body,
+                );
+
+                // Simpan kembali dengan key yang sama (overwrite)
+                await scheduleBox.put(key, updatedSchedule);
+                debugPrint("Jadwal disimpan dengan ID: $key");
+                debugPrint('data jadwal: ${updatedSchedule.id}, '
+                    '${updatedSchedule.hour}, ${updatedSchedule.minute}, '
+                    '${updatedSchedule.repeatDays}, ${updatedSchedule.title}, '
+                    '${updatedSchedule.body}');
+
+                // Jadwalkan notifikasi menggunakan ID dari key Hive
+                await notifiService.scheduleRepeatedReminder(updatedSchedule);
+              }
 
               Navigator.pop(context);
               setState(() {}); // Refresh UI
@@ -125,7 +167,7 @@ class _TestNotifState extends State<TestNotif> {
               icon: Icon(Icons.delete),
               onPressed: () async {
                 await notifiService.deleteScheduleWithNotification(schedule);
-                await scheduleBox.deleteAt(index);
+                debugPrint("Jadwal dengan ID ${schedule.id} dihapus");
                 setState(() {});
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Jadwal dihapus')),
