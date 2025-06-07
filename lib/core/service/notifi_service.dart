@@ -1,4 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
+import 'package:tanamin/data/models/schedule.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart';
 import 'dart:io';
@@ -9,7 +11,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 class NotifiService {
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
-      
+
   Future<void> init() async {
     initializeTimeZones();
     setLocalLocation(getLocation('Asia/Jakarta'));
@@ -105,5 +107,58 @@ class NotifiService {
       matchDateTimeComponents:
           DateTimeComponents.dayOfWeekAndTime, // or dateAndTime
     );
+  }
+
+  Future<void> scheduleRepeatedReminder(PlantSchedule schedule) async {
+    for (var weekday in schedule.repeatDays) {
+      final scheduledDate =
+          _nextInstanceOfWeekdayTime(weekday, schedule.hour, schedule.minute);
+
+      await notificationsPlugin.zonedSchedule(
+        schedule.id + weekday, // agar unik tiap hari
+        schedule.title,
+        schedule.body,
+        scheduledDate,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'plant_schedule_channel_id',
+            'Plant Care Schedule',
+            channelDescription: 'Schedule reminders for watering/fertilizing',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      );
+    }
+  }
+
+  TZDateTime _nextInstanceOfWeekdayTime(int weekday, int hour, int minute) {
+    final now = TZDateTime.now(local);
+    TZDateTime scheduledDate =
+        TZDateTime(local, now.year, now.month, now.day, hour, minute);
+
+    while (scheduledDate.weekday != weekday) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 7));
+    }
+
+    return scheduledDate;
+  }
+
+  Future<void> deleteScheduleWithNotification(PlantSchedule schedule) async {
+    final notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    for (int weekday in schedule.repeatDays) {
+      await notificationsPlugin
+          .cancel(schedule.id + weekday); // cancel notifikasi spesifik
+    }
+
+    final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
+    await scheduleBox.delete(schedule.id); // hapus dari Hive
   }
 }
