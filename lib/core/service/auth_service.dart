@@ -7,15 +7,15 @@ class AuthService {
   static const String userBoxName = 'users';
   static const String sessionKey = 'loggedInUserId';
 
-  Future<void> registerUser({
-    required String nama,
-    required String email,
-    required String password,
-  }) async {
-    var box = await Hive.openBox<UserModel>(userBoxName);
+  Future<void> registerUser(
+    String nama,
+    String email,
+    String password,
+  ) async {
+    var box = Hive.box<UserModel>(userBoxName);
     bool exists = box.values.any((user) => user.email == email);
     if (exists) {
-      throw Exception('Email sudah terdaftar');
+      throw Exception('User with this email already exists');
     }
     int key = await box.add(
       UserModel(
@@ -27,27 +27,28 @@ class AuthService {
         config: 0, // Default config
       ),
     );
-    
-    UserModel newUser = box.getAt(key)!;
-    if (newUser.id.isEmpty) {
-      newUser.id = key.toString();  // Set the ID to the key
+
+    UserModel? newUser = box.get(key);
+    if (newUser != null) {
+      newUser.id = key.toString(); // Set the ID to the key
       await newUser.save();
     }
   }
 
-  Future<UserModel?> login(String email, String password) async {
-    final box = await Hive.openBox<UserModel>(userBoxName);
-    final user = box.get(email);
+  Future<void> login(String email, String password) async {
+    Box<UserModel> box = Hive.box<UserModel>(userBoxName);
 
-    if (user == null) return null;
+    bool loginSuccess = box.values.any((user) =>
+        user.email == email && user.password == hashPassword(password));
 
-    if (user.password == hashPassword(password)) {
+    if (loginSuccess) {
+      UserModel? user = box.values.firstWhere(
+        (user) => user.email == email && user.password == hashPassword(password),
+      );
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(sessionKey, user.id);
-      return user;
     }
-
-    return null;
   }
 
   Future<void> logout() async {
