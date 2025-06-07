@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/data/models/user.dart';
@@ -8,10 +9,7 @@ class AuthService {
   static const String sessionKey = 'loggedInUserId';
 
   Future<void> registerUser(
-    String nama,
-    String email,
-    String password,
-  ) async {
+      String nama, String email, String password, context) async {
     var box = Hive.box<UserModel>(userBoxName);
     bool exists = box.values.any((user) => user.email == email);
     if (exists) {
@@ -32,10 +30,17 @@ class AuthService {
     if (newUser != null) {
       newUser.id = key.toString(); // Set the ID to the key
       await newUser.save();
+      ScaffoldMessenger.of(
+        context, // Ensure you have a valid BuildContext here
+      ).showSnackBar(const SnackBar(
+        content: Text('Regis Berhasil'),
+        backgroundColor: Colors.green,
+      ));
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(
+      String email, String password, BuildContext context) async {
     Box<UserModel> box = Hive.box<UserModel>(userBoxName);
 
     bool loginSuccess = box.values.any((user) =>
@@ -43,12 +48,28 @@ class AuthService {
 
     if (loginSuccess) {
       UserModel? user = box.values.firstWhere(
-        (user) => user.email == email && user.password == hashPassword(password),
+        (user) =>
+            user.email == email && user.password == hashPassword(password),
       );
+
+      debugPrint('User logged in: ${user.nama}');
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(sessionKey, user.id);
       await prefs.setBool('userLoggedIn', true);
+      ScaffoldMessenger.of(
+        context, // Ensure you have a valid BuildContext here
+      ).showSnackBar(const SnackBar(
+        content: Text('Login Berhasil'),
+        backgroundColor: Colors.green,
+      ));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(
+        content: Text('username atau password salah'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 

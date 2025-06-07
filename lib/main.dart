@@ -6,6 +6,7 @@ import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
+import 'package:tanamin/presentation/screens/login.dart';
 import 'package:tanamin/test/test.dart';
 import 'package:tanamin/test/test_konvert_waktu.dart';
 import 'package:tanamin/test/test_notif.dart';
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: TestNotif(),
+      home: Login(),
     );
   }
 }
