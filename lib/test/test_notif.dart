@@ -46,6 +46,22 @@ class _TestNotifState extends State<TestNotif> {
   }
 }
 
+  Future<void> showInstantNotification({required int id, required String title, required String body}) async {
+    await notificationsPlugin.show(
+      id,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'instant_notification_channel_id',
+          'Instant Notifications',
+          channelDescription: 'instant notifications channel',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +70,16 @@ class _TestNotifState extends State<TestNotif> {
         title: const Text('Test Notif'),
       ),
       body: Center(
-        child: Text("HEllo World!"),
+        child: ElevatedButton(
+          onPressed: () async {
+            await showInstantNotification(
+              id: 0,
+              title: 'Instant Notification',
+              body: 'Ini adalah notifikasi instan.',
+            );
+          },
+          child: const Text('Tampilkan Notifikasi Instan'),
+        ),
       ),
     );
   }
