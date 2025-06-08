@@ -37,15 +37,20 @@ class _ProfileState extends State<Profile> {
     final primaryColor = Colors.green.shade700;
     final secondaryColor = Colors.green.shade400;
     final backgroundColor = Colors.grey.shade100;
+
+    // List mata uang
+    final currencyOptions = const [
+      'Rupiah (IDR)',
+      'Dollar Amerika (USD)',
+      'Euro (EUR)',
+      'Poundsterling (GBP)',
+      'Yen Jepang (JPY)',
+      'Dollar Singapura (SGD)',
+      'Dollar Australia (AUD)',
+    ];
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -66,6 +71,12 @@ class _ProfileState extends State<Profile> {
               padding: const EdgeInsets.only(bottom: 32),
               child: Column(
                 children: [
+                  const SizedBox(height: 28),
+                  const Text('Profile',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 28),
                   // Avatar with shadow and border
                   Container(
@@ -123,6 +134,66 @@ class _ProfileState extends State<Profile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --- Setting Mata Uang ---
+                  const Text(
+                    "Setting",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 10),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.attach_money, color: Colors.green),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButton<int>(
+                              value: _user?.config ?? 0,
+                              isExpanded: true,
+                              underline: const SizedBox(),
+                              items: List.generate(currencyOptions.length, (i) {
+                                return DropdownMenuItem(
+                                  value: i,
+                                  child: Text(currencyOptions[i]),
+                                );
+                              }),
+                              onChanged: (val) async {
+                                if (_user != null && val != null) {
+                                  setState(() {
+                                    _user!.config = val;
+                                  });
+                                  await _user!.save();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                            'Mata uang berhasil diubah!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  // --- Tentang Aplikasi ---
                   const Text(
                     "Tentang Aplikasi",
                     style: TextStyle(
@@ -149,7 +220,8 @@ class _ProfileState extends State<Profile> {
                       ),
                       label: const Text(
                         'Logout',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade600,
@@ -192,7 +264,8 @@ class _ProfileState extends State<Profile> {
             subtitle,
             style: const TextStyle(fontSize: 13),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         ),
       );
 }
