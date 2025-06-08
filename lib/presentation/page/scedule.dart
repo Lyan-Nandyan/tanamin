@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:tanamin/core/service/auth_service.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
-import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/myplant.dart';
+import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/widgets/add_plant_dialog.dart';
 import 'package:tanamin/widgets/plant_card.dart';
 
-class TestNotif extends StatefulWidget {
-  const TestNotif({super.key});
+class Scedule extends StatefulWidget {
+  const Scedule({super.key});
 
   @override
-  State<TestNotif> createState() => _TestNotifState();
+  State<Scedule> createState() => _SceduleState();
 }
 
-class _TestNotifState extends State<TestNotif> {
+class _SceduleState extends State<Scedule> {
   final NotifiService notifiService = NotifiService();
   final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
   final plantBox = Hive.box<MyPlant>('my_plants');
@@ -62,12 +62,17 @@ class _TestNotifState extends State<TestNotif> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tanaman Kamu'),
+        title: Text('Tanaman Kamu ${currentUser?.nama ?? 'Guest'}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showAddPlantDialog,
-          )
+          ),
+          IconButton(
+              onPressed: () {
+                authService.logout(context);
+              },
+              icon: const Icon(Icons.logout)),
         ],
       ),
       body: plants.isEmpty
