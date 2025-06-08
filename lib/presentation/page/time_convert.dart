@@ -40,92 +40,141 @@ class _TimeConvertState extends State<TimeConvert> {
   @override
   Widget build(BuildContext context) {
     final timeMap = convertService.convertLocalToZones(_currentTime);
+    final primaryColor = Colors.green.shade700;
+    final secondaryColor = Colors.green.shade400;
+    final backgroundColor = Colors.grey.shade100;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Konversi Waktu'),
-        centerTitle: true,
-      ),
-      body: Stack(
+      backgroundColor: backgroundColor,
+      body: Column(
         children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 24.0, horizontal: 16.0),
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Waktu Saat Ini',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${_currentTime.hour.toString().padLeft(2, '0')}:${_currentTime.minute.toString().padLeft(2, '0')}:${_currentTime.second.toString().padLeft(2, '0')}',
-                            style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.green),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Zona Lokal: $localZone',
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
+          // Header dengan gradient dan ikon waktu
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryColor, secondaryColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.access_time, color: primaryColor, size: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Konversi Waktu',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Lihat waktu di berbagai zona',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Card waktu saat ini
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+            child: Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Waktu Saat Ini',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${_currentTime.hour.toString().padLeft(2, '0')}:${_currentTime.minute.toString().padLeft(2, '0')}:${_currentTime.second.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: primaryColor,
+                            letterSpacing: 2),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Zona Lokal: $localZone',
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: timeMap.length,
-                  itemBuilder: (context, index) {
-                    final key = timeMap.keys.elementAt(index);
-                    final value = timeMap[key];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.green[200],
-                          child: Text(
-                            '${index + 1}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(
-                          key,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          index != 0 ? '$value' : '$value $localZone',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-          ShakeAnimation(),
+          // List zona waktu lain
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: timeMap.length,
+              itemBuilder: (context, index) {
+                final key = timeMap.keys.elementAt(index);
+                final value = timeMap[key];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.green[100],
+                      child: Icon(Icons.public, color: primaryColor),
+                    ),
+                    title: Text(
+                      key,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      index != 0 ? '$value' : '$value $localZone',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
+      // Efek shake tetap di atas
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: ShakeAnimation(),
     );
   }
 }
