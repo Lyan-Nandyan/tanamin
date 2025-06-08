@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hive/hive.dart';
+import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
+import 'package:tanamin/data/models/user.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart';
 import 'dart:io';
@@ -190,6 +192,50 @@ class NotifiService {
   }
 
   Future<void> cancelAllNotifications() async {
-    await FlutterLocalNotificationsPlugin().cancelAll();
+    await notificationsPlugin.cancelAll();
+  }
+
+  Future<void> restoreUserNotificationsForLoggedInUser() async {
+    initializeTimeZones(); // Wajib
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('loggedInUserId');
+    if (userId == null) return;
+
+    final userBox = Hive.box<UserModel>('users');
+    final user = userBox.get(int.parse(userId));
+    if (user == null) return;
+
+    final plantBox = Hive.box<MyPlant>('my_plants');
+    final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
+    final notifiService = NotifiService();
+
+    final userPlantid= user.tanaman;
+
+    for (var plant in plantBox.values) {
+      if (!userPlantid.contains(plant.key.toString())) continue;
+
+      for (var scheduleId in plant.scheduleIds) {
+        final schedule = scheduleBox.get(scheduleId);
+        if (schedule != null) {
+          try {
+            final location = getLocation(schedule.zone);
+            setLocalLocation(location);
+            await notifiService.scheduleRepeatedReminder(schedule);
+          } catch (e) {
+            setLocalLocation(getLocation('Asia/Jakarta'));
+            await notifiService.scheduleRepeatedReminder(schedule);
+          }
+        }
+      }
+    }
+
+    // Kembalikan zona waktu ke perangkat pengguna
+    try {
+      final userZone = await FlutterTimezone.getLocalTimezone();
+      final userLocation = getLocation(userZone);
+      setLocalLocation(userLocation);
+    } catch (e) {
+      setLocalLocation(getLocation('Asia/Jakarta'));
+    }
   }
 }

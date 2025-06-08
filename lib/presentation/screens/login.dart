@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tanamin/core/service/auth_service.dart';
+import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/presentation/screens/regis.dart';
 
 class Login extends StatefulWidget {
@@ -54,7 +55,8 @@ class _LoginState extends State<Login> {
                   if (_formKey.currentState!.validate()) {
                     try {
                       await authService.login(
-                          _usernameCtrl.text, _passwordCtrl.text, context);                      
+                          _usernameCtrl.text, _passwordCtrl.text, context);
+                      NotifiService().restoreUserNotificationsForLoggedInUser();
                     } catch (e) {
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(e.toString())));

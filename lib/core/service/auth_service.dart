@@ -85,7 +85,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(sessionKey);
     await prefs.remove('userLoggedIn');
-    notifiService.cancelAllNotifications();
+    await notifiService.cancelAllNotifications();
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const Login()));
   }
