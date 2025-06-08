@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
+import 'package:tanamin/presentation/page/scedule.dart';
 import 'package:tanamin/presentation/screens/login.dart';
 import 'package:tanamin/test/test.dart';
 import 'package:tanamin/test/test_konvert_waktu.dart';
@@ -41,6 +43,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('userLoggedIn') ?? false;
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -54,7 +61,22 @@ class MyApp extends StatelessWidget {
           surfaceTintColor: Colors.transparent, // ← INI YANG PALING PENTING
         ),
       ),
-      home: Login(),
+      home: FutureBuilder<bool>(
+        future: _checkLoginStatus(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (snapshot.data == true) {
+            return Scedule();
+          } else {
+            return const Login();
+          }
+        },
+      ),
     );
   }
 }
