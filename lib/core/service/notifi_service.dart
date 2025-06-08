@@ -24,6 +24,10 @@ class NotifiService {
     await _setupTimeZone();
     await _initializeNotifications();
     await _requestPermissions();
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('userLoggedIn') == true) {
+      await syncScheduleZoneWithDevice();
+    }
   }
 
   Future<void> _setupTimeZone() async {
@@ -209,7 +213,7 @@ class NotifiService {
     final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
     final notifiService = NotifiService();
 
-    final userPlantid= user.tanaman;
+    final userPlantid = user.tanaman;
 
     for (var plant in plantBox.values) {
       if (!userPlantid.contains(plant.key.toString())) continue;
@@ -253,15 +257,14 @@ class NotifiService {
     final plantBox = Hive.box<MyPlant>('my_plants');
     final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
 
-    // Ambil zona waktu perangkat saat ini
     String deviceZone;
     try {
       deviceZone = await FlutterTimezone.getLocalTimezone();
     } catch (e) {
       deviceZone = 'Asia/Jakarta';
     }
+
     final deviceLocation = getLocation(deviceZone);
-    final deviceOffset = deviceLocation.currentTimeZone.offset ~/ 3600; // jam
 
     for (var plant in plantBox.values) {
       if (!user.tanaman.contains(plant.key.toString())) continue;
@@ -271,18 +274,22 @@ class NotifiService {
         if (schedule == null) continue;
 
         if (schedule.zone != deviceZone) {
-          // Hitung offset zona waktu lama
           final oldLocation = getLocation(schedule.zone);
-          final oldOffset = oldLocation.currentTimeZone.offset ~/ 3600;
 
-          // Selisih offset
-          final diff = deviceOffset - oldOffset;
+          // Buat waktu lokal berdasarkan zona lama
+          final originalLocalTime = TZDateTime(
+            oldLocation,
+            2025, 1, 1, // tanggal arbitrer
+            schedule.hour,
+            schedule.minute,
+          );
 
-          // Update jam sesuai selisih zona waktu
-          int newHour = (schedule.hour + diff) % 24;
-          if (newHour < 0) newHour += 24;
+          // Konversi ke zona waktu perangkat saat ini
+          final converted = TZDateTime.from(originalLocalTime, deviceLocation);
 
-          schedule.hour = newHour;
+          // Simpan jam & menit baru
+          schedule.hour = converted.hour;
+          schedule.minute = converted.minute;
           schedule.zone = deviceZone;
           await schedule.save();
         }
