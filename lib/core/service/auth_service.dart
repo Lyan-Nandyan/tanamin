@@ -6,6 +6,7 @@ import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/presentation/page/home.dart';
 import 'package:tanamin/presentation/page/recomend.dart';
 import 'package:tanamin/presentation/page/scedule.dart';
+import 'package:tanamin/presentation/page/time_convert.dart';
 import 'package:tanamin/presentation/screens/login.dart';
 import '../utils/hash_util.dart';
 
@@ -69,8 +70,8 @@ class AuthService {
         content: Text('Login Berhasil'),
         backgroundColor: Colors.green,
       ));
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Scedule()));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const TimeConvert()));
     } else {
       ScaffoldMessenger.of(
         context,
