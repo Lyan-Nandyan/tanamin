@@ -3,10 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/user.dart';
-import 'package:tanamin/presentation/page/home.dart';
-import 'package:tanamin/presentation/page/recomend.dart';
-import 'package:tanamin/presentation/page/scedule.dart';
-import 'package:tanamin/presentation/page/time_convert.dart';
+import 'package:tanamin/presentation/page/bottom_nav_bar.dart';
 import 'package:tanamin/presentation/screens/login.dart';
 import '../utils/hash_util.dart';
 
@@ -71,7 +68,7 @@ class AuthService {
         backgroundColor: Colors.green,
       ));
       Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const TimeConvert()));
+          MaterialPageRoute(builder: (context) => const BottomNavbar()));
     } else {
       ScaffoldMessenger.of(
         context,

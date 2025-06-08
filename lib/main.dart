@@ -2,19 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/core/service/auth_service.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
-import 'package:tanamin/presentation/page/profile.dart';
-import 'package:tanamin/presentation/page/scedule.dart';
-import 'package:tanamin/presentation/page/time_convert.dart';
+import 'package:tanamin/presentation/page/bottom_nav_bar.dart';
 import 'package:tanamin/presentation/screens/login.dart';
-import 'package:tanamin/test/test.dart';
-import 'package:tanamin/test/test_konvert_waktu.dart';
-import 'package:tanamin/test/test_notif.dart';
 
 void main() async {
   // Load environment variables from .env file
@@ -70,7 +64,7 @@ class MyApp extends StatelessWidget {
           }
 
           if (snapshot.data == true) {
-            return Profile();
+            return BottomNavbar();
           } else {
             return const Login();
           }
