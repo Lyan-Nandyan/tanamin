@@ -14,6 +14,17 @@ class SearchBarWidget extends StatelessWidget {
         fillColor: Colors.white.withOpacity(0.1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            color: Colors.black,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            color: Colors.black,
+            width: 2,
+          ),
         ),
         prefixIcon: const Icon(Icons.search, color: Colors.black),
       ),

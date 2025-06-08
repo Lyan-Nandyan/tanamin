@@ -3,9 +3,9 @@ import '../../../core/service/plant_service.dart';
 import '../../../data/models/plant_model.dart';
 import '../../../widgets/converted_price_text.dart';
 
-class PlantListWidget extends StatelessWidget {
+class AllPlantList extends StatelessWidget {
   final int? option;
-  const PlantListWidget({super.key, this.option});
+  const AllPlantList({super.key, this.option});
 
   Future<List<Plant>> _fetchPlants() async {
     final plants = await PlantService.getAllPlant('');

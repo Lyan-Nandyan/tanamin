@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/service/location_service.dart';
 import '../../../core/service/weather_service.dart';
-import '../../../core/service/plant_recommendation_service.dart';
 
 class LocationWeatherController {
   final LocationService _locationService = LocationService();
@@ -33,20 +32,10 @@ class LocationWeatherController {
     }
   }
 
-  Future<void> testRecommendation() async {
-    if (currentTemp != null && currentHumidity != null) {
-      final recommendations = await PlantRecommendationService()
-          .getRecommendedPlants(currentTemp!, currentHumidity!);
-      debugPrint('Rekomendasi:');
-      for (var plant in recommendations) {
-        debugPrint(' - ${plant.name}');
-      }
-    }
-  }
+  
 
   Future<void> init(VoidCallback onUpdated) async {
     await fetchData();
-    await testRecommendation();
     onUpdated();
   }
 }

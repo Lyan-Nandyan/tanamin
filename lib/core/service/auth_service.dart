@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/presentation/page/home.dart';
+import 'package:tanamin/presentation/page/recomend.dart';
 import 'package:tanamin/presentation/screens/login.dart';
 import '../utils/hash_util.dart';
 
@@ -66,7 +67,7 @@ class AuthService {
         backgroundColor: Colors.green,
       ));
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Home()));
+          context, MaterialPageRoute(builder: (context) => const Recomend()));
     } else {
       ScaffoldMessenger.of(
         context,
