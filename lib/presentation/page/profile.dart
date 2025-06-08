@@ -49,6 +49,17 @@ class _ProfileState extends State<Profile> {
       'Dollar Australia (AUD)',
     ];
 
+    // List logo/icon untuk setiap mata uang
+    final currencyIcons = const [
+      Icons.payments, // IDR
+      Icons.attach_money, // USD
+      Icons.euro, // EUR
+      Icons.currency_pound, // GBP
+      Icons.currency_yen, // JPY
+      Icons.currency_exchange, // SGD
+      Icons.currency_exchange, // AUD
+    ];
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SingleChildScrollView(
@@ -154,41 +165,40 @@ class _ProfileState extends State<Profile> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 10),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.attach_money, color: Colors.green),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: DropdownButton<int>(
-                              value: _user?.config ?? 0,
-                              isExpanded: true,
-                              underline: const SizedBox(),
-                              items: List.generate(currencyOptions.length, (i) {
-                                return DropdownMenuItem(
-                                  value: i,
-                                  child: Text(currencyOptions[i]),
-                                );
-                              }),
-                              onChanged: (val) async {
-                                if (_user != null && val != null) {
-                                  setState(() {
-                                    _user!.config = val;
-                                  });
-                                  await _user!.save();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                            'Mata uang berhasil diubah!'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
+                      child: DropdownButton<int>(
+                        value: _user?.config ?? 0,
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        items: List.generate(currencyOptions.length, (i) {
+                          return DropdownMenuItem(
+                            value: i,
+                            child: Row(
+                              children: [
+                                Icon(currencyIcons[i],
+                                    color: Colors.green.shade700, size: 20),
+                                const SizedBox(width: 8),
+                                Text(currencyOptions[i]),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        }),
+                        onChanged: (val) async {
+                          if (_user != null && val != null) {
+                            setState(() {
+                              _user!.config = val;
+                            });
+                            await _user!.save();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      const Text('Mata uang berhasil diubah!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          }
+                        },
                       ),
                     ),
                   ),
