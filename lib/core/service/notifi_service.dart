@@ -238,4 +238,55 @@ class NotifiService {
       setLocalLocation(getLocation('Asia/Jakarta'));
     }
   }
+
+  /// Sinkronisasi zona waktu pada DB jadwal dengan zona waktu perangkat.
+  /// Jika berbeda, update field zone dan sesuaikan jam (hour) di Hive.
+  Future<void> syncScheduleZoneWithDevice() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('loggedInUserId');
+    if (userId == null) return;
+
+    final userBox = Hive.box<UserModel>('users');
+    final user = userBox.get(int.parse(userId));
+    if (user == null) return;
+
+    final plantBox = Hive.box<MyPlant>('my_plants');
+    final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
+
+    // Ambil zona waktu perangkat saat ini
+    String deviceZone;
+    try {
+      deviceZone = await FlutterTimezone.getLocalTimezone();
+    } catch (e) {
+      deviceZone = 'Asia/Jakarta';
+    }
+    final deviceLocation = getLocation(deviceZone);
+    final deviceOffset = deviceLocation.currentTimeZone.offset ~/ 3600; // jam
+
+    for (var plant in plantBox.values) {
+      if (!user.tanaman.contains(plant.key.toString())) continue;
+
+      for (var scheduleId in plant.scheduleIds) {
+        final schedule = scheduleBox.get(scheduleId);
+        if (schedule == null) continue;
+
+        if (schedule.zone != deviceZone) {
+          // Hitung offset zona waktu lama
+          final oldLocation = getLocation(schedule.zone);
+          final oldOffset = oldLocation.currentTimeZone.offset ~/ 3600;
+
+          // Selisih offset
+          final diff = deviceOffset - oldOffset;
+
+          // Update jam sesuai selisih zona waktu
+          int newHour = (schedule.hour + diff) % 24;
+          if (newHour < 0) newHour += 24;
+
+          schedule.hour = newHour;
+          schedule.zone = deviceZone;
+          await schedule.save();
+        }
+      }
+    }
+  }
 }
