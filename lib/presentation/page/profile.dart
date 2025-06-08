@@ -35,8 +35,6 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Colors.green;
-    final textColor = primaryColor;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile', style: TextStyle(color: Colors.white)),
@@ -109,7 +107,7 @@ class _ProfileState extends State<Profile> {
                   Text(
                     "About",
                     style: TextStyle(
-                      color: textColor,
+                      color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -151,21 +149,16 @@ class _ProfileState extends State<Profile> {
 
   Widget _profileMenuItem(IconData icon, String title, String subtitle) => Card(
         elevation: 0,
-        color: Colors.green,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: Colors.black),
         ),
         child: ListTile(
-          leading: Icon(icon, color: Colors.white),
-          title: Text(title,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.white)),
-          subtitle: Text(
-            subtitle,
-            style: TextStyle(color: Colors.white),
-          ),
+          leading: Icon(icon, color: Colors.black),
+          title:
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(subtitle),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),

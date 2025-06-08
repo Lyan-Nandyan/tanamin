@@ -52,13 +52,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.green, // Ganti dengan warna sesuai tema kamu
-          scrolledUnderElevation: 0,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent, // ← INI YANG PALING PENTING
-        ),
-      ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor:
+                Colors.green, // Ganti dengan warna sesuai tema kamu
+            scrolledUnderElevation: 0,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent, // ← INI YANG PALING PENTING
+          ),
+          scaffoldBackgroundColor: Colors.green[200]),
       home: FutureBuilder<bool>(
         future: AuthService().isLoggedIn(),
         builder: (context, snapshot) {
