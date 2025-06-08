@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
             elevation: 0,
             surfaceTintColor: Colors.transparent, // ← INI YANG PALING PENTING
           ),
-          scaffoldBackgroundColor: Colors.green[200]),
+          scaffoldBackgroundColor: Colors.grey.shade100),
       home: FutureBuilder<bool>(
         future: AuthService().isLoggedIn(),
         builder: (context, snapshot) {
