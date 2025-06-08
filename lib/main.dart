@@ -8,6 +8,7 @@ import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
+import 'package:tanamin/presentation/page/profile.dart';
 import 'package:tanamin/presentation/page/scedule.dart';
 import 'package:tanamin/presentation/page/time_convert.dart';
 import 'package:tanamin/presentation/screens/login.dart';
@@ -68,7 +69,7 @@ class MyApp extends StatelessWidget {
           }
 
           if (snapshot.data == true) {
-            return TimeConvert();
+            return Profile();
           } else {
             return const Login();
           }
