@@ -44,63 +44,54 @@ class RecomendPlantList extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Anda memilih ${plant.name}')),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16)),
-                        child: Image.network(
-                          plant.imageUrl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Image.network(
+                        plant.imageUrl,
+                        height: 160,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
                           height: 160,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 160,
-                            color: Colors.grey[300],
-                            child:
-                                const Icon(Icons.image_not_supported, size: 80),
+                          color: Colors.grey[300],
+                          child:
+                              const Icon(Icons.image_not_supported, size: 80),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(plant.name,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
+                          Text(plant.description,
+                              maxLines: 2, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            children: plant.suitableSeasons
+                                .map((season) => Chip(label: Text(season)))
+                                .toList(),
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Text('Suhu: ${plant.minTemp}°C – ${plant.maxTemp}°C'),
+                          Text(
+                              'Kelembapan: ${plant.minHumidity}% – ${plant.maxHumidity}%'),
+                          const SizedBox(height: 6),
+                          ConvertedPriceText(
+                              amount: plant.estimatedCost,
+                              currencyOption: option ?? 1),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(plant.name,
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 6),
-                            Text(plant.description,
-                                maxLines: 2, overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 6,
-                              children: plant.suitableSeasons
-                                  .map((season) => Chip(label: Text(season)))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                                'Suhu: ${plant.minTemp}°C – ${plant.maxTemp}°C'),
-                            Text(
-                                'Kelembapan: ${plant.minHumidity}% – ${plant.maxHumidity}%'),
-                            const SizedBox(height: 6),
-                            ConvertedPriceText(
-                                amount: plant.estimatedCost,
-                                currencyOption: option ?? 1),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },

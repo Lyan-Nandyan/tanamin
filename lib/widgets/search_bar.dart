@@ -6,32 +6,28 @@ class SearchBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      readOnly: true,
-      decoration: InputDecoration(
-        hintText: 'Search Plants...',
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(
-            color: Colors.black,
-            width: 1,
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(30),
+      child: TextField(
+        readOnly: true,
+        decoration: InputDecoration(
+          hintText: 'Cari tanaman...',
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
           ),
+          prefixIcon: const Icon(Icons.search, color: Colors.green),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(
-            color: Colors.black,
-            width: 2,
-          ),
+        style: const TextStyle(color: Colors.black),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchPlant()),
         ),
-        prefixIcon: const Icon(Icons.search, color: Colors.black),
-      ),
-      style: const TextStyle(color: Colors.black),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SearchPlant()),
       ),
     );
   }

@@ -76,69 +76,72 @@ class _BottomNavbarState extends State<BottomNavbar> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        children: _pages,
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
-            ),
-          ],
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(18),
-            topRight: Radius.circular(18),
-          ),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: (int index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          children: _pages,
         ),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-          ),
-          child: BottomNavigationBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            currentIndex: _currentIndex,
-            selectedItemColor: Colors.green.shade700,
-            unselectedItemColor: Colors.green.shade300,
-            showUnselectedLabels: true,
-            onTap: _onItemTapped,
-            type: BottomNavigationBarType.fixed,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            items: [
-              BottomNavigationBarItem(
-                icon: _buildIconWithBackground(Icons.home, 0),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: _buildIconWithBackground(Icons.recommend, 1),
-                label: 'Rekomendasi',
-              ),
-              BottomNavigationBarItem(
-                icon: _buildIconWithBackground(Icons.schedule, 2),
-                label: 'Jadwal',
-              ),
-              BottomNavigationBarItem(
-                icon: _buildIconWithBackground(Icons.access_time, 3),
-                label: 'Konversi Waktu',
-              ),
-              BottomNavigationBarItem(
-                icon: _buildIconWithBackground(Icons.person, 4),
-                label: 'Profil',
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, -2),
               ),
             ],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(18),
+              topRight: Radius.circular(18),
+            ),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+            ),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              currentIndex: _currentIndex,
+              selectedItemColor: Colors.green.shade700,
+              unselectedItemColor: Colors.green.shade300,
+              showUnselectedLabels: true,
+              onTap: _onItemTapped,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              items: [
+                BottomNavigationBarItem(
+                  icon: _buildIconWithBackground(Icons.home, 0),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: _buildIconWithBackground(Icons.recommend, 1),
+                  label: 'Rekomendasi',
+                ),
+                BottomNavigationBarItem(
+                  icon: _buildIconWithBackground(Icons.schedule, 2),
+                  label: 'Jadwal',
+                ),
+                BottomNavigationBarItem(
+                  icon: _buildIconWithBackground(Icons.access_time, 3),
+                  label: 'Konversi Waktu',
+                ),
+                BottomNavigationBarItem(
+                  icon: _buildIconWithBackground(Icons.person, 4),
+                  label: 'Profil',
+                ),
+              ],
+            ),
           ),
         ),
       ),
