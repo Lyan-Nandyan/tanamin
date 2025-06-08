@@ -80,15 +80,27 @@ class PlantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(plant.name),
+            Text(
+              plant.name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () => _deletePlant(context),
+              tooltip: "Hapus Tanaman",
             )
           ],
         ),
@@ -105,8 +117,19 @@ class PlantCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
+                icon: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
                 label: const Text("Tambah Jadwal"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade700,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
                 onPressed: () => _showAddScheduleDialog(context),
               ),
             ),

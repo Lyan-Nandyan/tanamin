@@ -77,7 +77,16 @@ class RecomendPlantList extends StatelessWidget {
                           Wrap(
                             spacing: 6,
                             children: plant.suitableSeasons
-                                .map((season) => Chip(label: Text(season)))
+                                .map((season) => Chip(
+                                    label: Text(season),
+                                    visualDensity: VisualDensity.compact,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    backgroundColor: Colors.green.shade50,
+                                    labelStyle: TextStyle(
+                                      color: Colors.green.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    )))
                                 .toList(),
                           ),
                           const SizedBox(height: 4),

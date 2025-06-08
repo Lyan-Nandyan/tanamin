@@ -49,6 +49,10 @@ class _SceduleState extends State<Scedule> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Colors.green.shade700;
+    final secondaryColor = Colors.green.shade400;
+    final backgroundColor = Colors.grey.shade100;
+
     if (currentUser == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -61,41 +65,100 @@ class _SceduleState extends State<Scedule> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tanaman Kamu ${currentUser?.nama ?? 'Guest'}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddPlantDialog,
+      backgroundColor: backgroundColor,
+      body: Column(
+        children: [
+          // Header dengan gradient dan avatar
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryColor, secondaryColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    (currentUser?.nama.isNotEmpty ?? false)
+                        ? currentUser!.nama[0].toUpperCase()
+                        : '?',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Jadwal Tanaman',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        currentUser?.nama ?? 'Guest',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  tooltip: "Tambah Tanaman",
+                  onPressed: _showAddPlantDialog,
+                ),
+              ],
+            ),
           ),
-          IconButton(
-              onPressed: () {
-                authService.logout(context);
-              },
-              icon: const Icon(Icons.logout)),
+          // Konten utama
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 18, right: 18, top: 18),
+              child: plants.isEmpty
+                  ? const Center(child: Text("Belum ada tanaman"))
+                  : ListView.builder(
+                      itemCount: plants.length,
+                      itemBuilder: (context, index) {
+                        final plant = plants[index];
+                        final schedules = plant.scheduleIds
+                            .map((id) => scheduleBox.get(id))
+                            .whereType<PlantSchedule>()
+                            .toList();
+
+                        return PlantCard(
+                          plant: plant,
+                          schedules: schedules,
+                          onScheduleDeleted: () => setState(() {}),
+                          onPlantDeleted: () => setState(() {}),
+                          notifiService: notifiService,
+                          authService: authService,
+                        );
+                      },
+                    ),
+            ),
+          ),
         ],
       ),
-      body: plants.isEmpty
-          ? const Center(child: Text("Belum ada tanaman"))
-          : ListView.builder(
-              itemCount: plants.length,
-              itemBuilder: (context, index) {
-                final plant = plants[index];
-                final schedules = plant.scheduleIds
-                    .map((id) => scheduleBox.get(id))
-                    .whereType<PlantSchedule>()
-                    .toList();
-
-                return PlantCard(
-                  plant: plant,
-                  schedules: schedules,
-                  onScheduleDeleted: () => setState(() {}),
-                  onPlantDeleted: () => setState(() {}),
-                  notifiService: notifiService,
-                  authService: authService,
-                );
-              },
-            ),
     );
   }
 }

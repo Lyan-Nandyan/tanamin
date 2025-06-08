@@ -27,14 +27,20 @@ class ScheduleListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(schedule.title),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      title: Text(
+        schedule.title,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
-        'Jam: ${schedule.hour}:${schedule.minute.toString().padLeft(2, '0')} ${schedule.zone} | '
+        'Jam: ${schedule.hour}:${schedule.minute.toString().padLeft(2, '0')} (${schedule.zone})\n'
         'Hari: ${schedule.repeatDays.join(', ')}',
+        style: const TextStyle(fontSize: 13),
       ),
       trailing: IconButton(
-        icon: const Icon(Icons.delete),
+        icon: const Icon(Icons.delete, color: Colors.grey),
         onPressed: _deleteSchedule,
+        tooltip: "Hapus Jadwal",
       ),
     );
   }
