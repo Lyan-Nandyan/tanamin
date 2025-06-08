@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tanamin/core/service/notifi_service.dart';
 import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/presentation/page/home.dart';
 import 'package:tanamin/presentation/page/recomend.dart';
@@ -11,6 +12,7 @@ import '../utils/hash_util.dart';
 class AuthService {
   static const String userBoxName = 'users';
   static const String sessionKey = 'loggedInUserId';
+  NotifiService notifiService = NotifiService();
 
   Future<void> registerUser(
       String nama, String email, String password, context) async {
@@ -83,6 +85,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(sessionKey);
     await prefs.remove('userLoggedIn');
+    notifiService.cancelAllNotifications();
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const Login()));
   }

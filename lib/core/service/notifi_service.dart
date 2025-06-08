@@ -188,4 +188,8 @@ class NotifiService {
     await scheduleBox.delete(schedule.id); // hapus dari Hive
     debugPrint("Jadwal dengan ID ${schedule.id} dihapus dari Hive");
   }
+
+  Future<void> cancelAllNotifications() async {
+    await FlutterLocalNotificationsPlugin().cancelAll();
+  }
 }
