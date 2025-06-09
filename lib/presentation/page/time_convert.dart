@@ -172,9 +172,6 @@ class _TimeConvertState extends State<TimeConvert> {
           ),
         ],
       ),
-      // Efek shake tetap di atas
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: ShakeAnimation(),
     );
   }
 }
