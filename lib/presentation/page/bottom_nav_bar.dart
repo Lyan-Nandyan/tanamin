@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tanamin/presentation/page/recomend.dart';
 import 'package:tanamin/presentation/page/scedule.dart';
 import 'package:tanamin/presentation/page/time_convert.dart';
+import 'package:tanamin/widgets/shake_animation.dart';
 import 'home.dart';
 import 'profile.dart';
 
@@ -144,6 +145,8 @@ class _BottomNavbarState extends State<BottomNavbar> {
             ),
           ),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: ShakeAnimation(),
       ),
     );
   }
