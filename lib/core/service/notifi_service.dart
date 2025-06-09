@@ -12,7 +12,6 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 class NotifiService {
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -65,6 +64,15 @@ class NotifiService {
     debugPrint(granted == true
         ? "Izin notifikasi diberikan"
         : "Izin notifikasi ditolak atau tidak diminta");
+
+    if (granted != true) {
+      // Keluar aplikasi jika izin ditolak/tidak diizinkan
+      if (Platform.isAndroid) {
+        // Untuk Android
+        exit(0);
+      }
+      return;
+    }
 
     // Cek izin exact alarm jika Android 12+ (API 31+)
     if (Platform.isAndroid) {

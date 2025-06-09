@@ -17,8 +17,8 @@ class LocationWeatherController {
       final position = await _locationService.getCurrentLocation();
       location = 'Lat: ${position.latitude}, Lon: ${position.longitude}';
 
-      final weatherData =
-          await _weatherService.getWeather(position.latitude, position.longitude);
+      final weatherData = await _weatherService.getWeather(
+          position.latitude, position.longitude);
       weather = 'Suhu: ${weatherData.temperature}°C, '
           'Kelembapan: ${weatherData.humidity}%, '
           'Tekanan: ${weatherData.pressure} hPa, '
@@ -31,8 +31,6 @@ class LocationWeatherController {
       weather = 'Error: $e';
     }
   }
-
-  
 
   Future<void> init(VoidCallback onUpdated) async {
     await fetchData();

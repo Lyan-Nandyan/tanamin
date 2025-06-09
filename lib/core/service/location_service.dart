@@ -13,7 +13,7 @@ class LocationService {
       permission = await Geolocator.requestPermission();
       if (permission != LocationPermission.whileInUse &&
           permission != LocationPermission.always) {
-        throw Exception('Izin lokasi ditolak');
+        throw ('Izin lokasi ditolak');
       }
     }
 
