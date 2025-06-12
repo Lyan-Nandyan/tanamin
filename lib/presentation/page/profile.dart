@@ -387,6 +387,19 @@ class _ProfileState extends State<Profile> {
                       'lyannandyan@gmail.com'),
                   _profileMenuItem(Icons.star_outline, 'Rating',
                       'Bantu kami berkembang dengan memberi rating aplikasi'),
+                  const SizedBox(height: 28),
+                  const Text(
+                    "Pesan & Kesan",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _profileMenuItem(Icons.message, 'Pesan & Kesan Mata Kuliah',
+                      'Mata kuliah Teknologi Pemrograman Mobile sangat menyenangkan dan menantang. Tugas akhir yang memiliki kriteria unik memacu kreativitas, meskipun beberapa fitur seperti notifikasi harus dipelajari secara mandiri di luar materi praktikum maupun teori. Pengalaman ini memperluas wawasan dan melatih kemandirian dalam pengembangan aplikasi mobile.'),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
