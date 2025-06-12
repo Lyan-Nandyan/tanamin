@@ -21,6 +21,8 @@ class UserModel extends HiveObject {
   @HiveField(5)
   int config; // default: 0 (IDR)
 
+  @HiveField(6)
+  String? profileImage; // Path ke gambar profil, opsional
   UserModel({
     required this.id,
     required this.nama,
@@ -28,5 +30,16 @@ class UserModel extends HiveObject {
     required this.password,
     required this.tanaman,
     required this.config,
+    this.profileImage,
   });
+
+  // Helper method untuk mendapatkan inisial nama
+  String get nameInitial {
+    return nama.isNotEmpty ? nama[0].toUpperCase() : '?';
+  }
+
+  // Helper method untuk mengecek apakah user memiliki profile image
+  bool get hasProfileImage {
+    return profileImage != null && profileImage!.isNotEmpty;
+  }
 }

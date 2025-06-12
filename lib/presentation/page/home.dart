@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tanamin/core/service/auth_service.dart';
+import 'package:tanamin/core/service/profile_image_service.dart';
 import 'package:tanamin/data/models/user.dart';
 import 'package:tanamin/widgets/all_plant_list.dart';
 import 'package:tanamin/widgets/search_bar.dart';
@@ -14,6 +16,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   AuthService authService = AuthService();
   UserModel? user;
+  File? profileImage;
+  final ProfileImageService _profileImageService = ProfileImageService();
 
   @override
   void initState() {
@@ -23,10 +27,46 @@ class _HomeState extends State<Home> {
 
   void _loadUser() async {
     final loadedUser = await authService.getLoggedInUser();
+    final loadedProfileImage = await _profileImageService.getProfileImageFile();
     setState(() {
       user = loadedUser;
+      profileImage = loadedProfileImage;
     });
     debugPrint('User loaded: ${user?.nama}');
+  }
+
+  Widget _buildProfileAvatar() {
+    final primaryColor = Colors.green.shade700;
+    const double size = 56; // 28 * 2 for radius
+
+    return CircleAvatar(
+      radius: 28,
+      backgroundColor: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: profileImage != null
+            ? Image.file(
+                profileImage!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildInitialAvatar(primaryColor),
+              )
+            : _buildInitialAvatar(primaryColor),
+      ),
+    );
+  }
+
+  Widget _buildInitialAvatar(Color primaryColor) {
+    return Text(
+      user?.nameInitial ?? '?',
+      style: TextStyle(
+        color: primaryColor,
+        fontWeight: FontWeight.bold,
+        fontSize: 28,
+      ),
+    );
   }
 
   @override
@@ -55,20 +95,7 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    (user?.nama.isNotEmpty ?? false)
-                        ? user!.nama[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                    ),
-                  ),
-                ),
+                _buildProfileAvatar(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

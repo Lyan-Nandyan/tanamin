@@ -58,7 +58,8 @@ dependencies:
   #sensor
   sensors_plus: ^3.0.3
   lottie: ^2.7.0
-  
+  #image
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

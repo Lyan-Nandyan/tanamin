@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tanamin/core/service/auth_service.dart';
+import 'package:tanamin/core/service/profile_image_service.dart';
 import 'package:tanamin/data/models/user.dart';
 
 class Profile extends StatefulWidget {
@@ -11,6 +13,8 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   UserModel? _user;
+  File? _profileImage;
+  final ProfileImageService _profileImageService = ProfileImageService();
 
   @override
   void initState() {
@@ -20,8 +24,10 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _loadUserData() async {
     final user = await AuthService().getLoggedInUser();
+    final profileImage = await _profileImageService.getProfileImageFile();
     setState(() {
       _user = user;
+      _profileImage = profileImage;
     });
   }
 
@@ -29,8 +35,197 @@ class _ProfileState extends State<Profile> {
     await AuthService().logout(context);
   }
 
-  String get _initial =>
-      (_user?.nama.isNotEmpty ?? false) ? _user!.nama[0].toUpperCase() : '?';
+  Future<void> _showImagePickerOptions() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Pilih Foto Profil',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.green),
+              title: const Text('Ambil Foto'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _takePhoto();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.green),
+              title: const Text('Pilih dari Galeri'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImageFromGallery();
+              },
+            ),
+            if (_user?.hasProfileImage == true)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Hapus Foto'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _deleteProfileImage();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final image = await _profileImageService.pickAndSaveImage();
+      if (image != null) {
+        setState(() {
+          _profileImage = image;
+        });
+        await _loadUserData(); // Refresh user data
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diubah!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengubah foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final image = await _profileImageService.takeAndSavePhoto();
+      if (image != null) {
+        setState(() {
+          _profileImage = image;
+        });
+        await _loadUserData(); // Refresh user data
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diubah!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengambil foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteProfileImage() async {
+    try {
+      await _profileImageService.deleteProfileImage();
+      setState(() {
+        _profileImage = null;
+      });
+      await _loadUserData(); // Refresh user data
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto profil berhasil dihapus!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menghapus foto: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildProfileAvatar() {
+    const double avatarSize = 110;
+
+    return GestureDetector(
+      onTap: _showImagePickerOptions,
+      child: Stack(
+        children: [
+          Container(
+            width: avatarSize,
+            height: avatarSize,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(avatarSize / 2),
+              child: _profileImage != null
+                  ? Image.file(
+                      _profileImage!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _buildInitialAvatar(),
+                    )
+                  : _buildInitialAvatar(),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.green.shade700,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInitialAvatar() {
+    final primaryColor = Colors.green.shade700;
+    return Center(
+      child: Text(
+        _user?.nameInitial ?? '?',
+        style: TextStyle(
+          color: primaryColor,
+          fontSize: 54,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,33 +285,7 @@ class _ProfileState extends State<Profile> {
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 28),
                   // Avatar with shadow and border
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        _initial,
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 54,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildProfileAvatar(),
                   const SizedBox(height: 18),
                   Text(
                     _user?.nama ?? 'User',
@@ -190,9 +359,8 @@ class _ProfileState extends State<Profile> {
                             await _user!.save();
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      const Text('Mata uang berhasil diubah!'),
+                                const SnackBar(
+                                  content: Text('Mata uang berhasil diubah!'),
                                   backgroundColor: Colors.green,
                                 ),
                               );

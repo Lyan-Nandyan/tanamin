@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:tanamin/core/service/auth_service.dart';
 import 'package:tanamin/core/service/notifi_service.dart';
+import 'package:tanamin/core/service/profile_image_service.dart';
 import 'package:tanamin/data/models/myplant.dart';
 import 'package:tanamin/data/models/schedule.dart';
 import 'package:tanamin/data/models/user.dart';
@@ -20,7 +22,9 @@ class _SceduleState extends State<Scedule> {
   final scheduleBox = Hive.box<PlantSchedule>('plant_schedules');
   final plantBox = Hive.box<MyPlant>('my_plants');
   final AuthService authService = AuthService();
+  final ProfileImageService _profileImageService = ProfileImageService();
   UserModel? currentUser;
+  File? profileImage;
 
   @override
   void initState() {
@@ -31,8 +35,10 @@ class _SceduleState extends State<Scedule> {
 
   void _loadUser() async {
     final user = await authService.getLoggedInUser();
+    final loadedProfileImage = await _profileImageService.getProfileImageFile();
     setState(() {
       currentUser = user;
+      profileImage = loadedProfileImage;
     });
   }
 
@@ -43,6 +49,40 @@ class _SceduleState extends State<Scedule> {
         onSaved: () => setState(() {}),
         user: currentUser!,
         authService: authService,
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatar() {
+    final primaryColor = Colors.green.shade700;
+    const double size = 56;
+
+    return CircleAvatar(
+      radius: 28,
+      backgroundColor: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: profileImage != null
+            ? Image.file(
+                profileImage!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildInitialAvatar(primaryColor),
+              )
+            : _buildInitialAvatar(primaryColor),
+      ),
+    );
+  }
+
+  Widget _buildInitialAvatar(Color primaryColor) {
+    return Text(
+      currentUser?.nameInitial ?? '?',
+      style: TextStyle(
+        color: primaryColor,
+        fontWeight: FontWeight.bold,
+        fontSize: 28,
       ),
     );
   }
@@ -84,20 +124,7 @@ class _SceduleState extends State<Scedule> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    (currentUser?.nama.isNotEmpty ?? false)
-                        ? currentUser!.nama[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                    ),
-                  ),
-                ),
+                _buildProfileAvatar(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
